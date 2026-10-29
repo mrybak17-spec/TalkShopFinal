@@ -1,0 +1,1 @@
+#Stronka talk_shop
