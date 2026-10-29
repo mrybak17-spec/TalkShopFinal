@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from sqlalchemy import String, Float, Integer, create_engine, select
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
-from pathlib import Path
+
 from collections.abc import Sequence
 
 
@@ -51,11 +51,8 @@ class ProductModel(DatabaseModel):
 
 
 def prepare_db() -> Engine:
-    Path("local").mkdir(parents=True, exist_ok=True)
-
     engine = create_engine("sqlite:///local/demo.db")
     DatabaseModel.metadata.create_all(engine)
-
     return engine
 
 
@@ -70,103 +67,24 @@ def clear_db(eng: Engine)-> None:
         session.query(ProductModel).delete(synchronize_session="fetch")
         session.commit()
 
-def add_product(eng: Engine, product: Product) -> bool:
-    """Dodaje produkt. Nie pozwala na duplikaty nazw."""
+def retrieve_product_by_name(eng: Engine, name: str) -> list[Product]:
+    prods: list[Product] = []
     with Session(eng) as session:
-        existing = session.scalars(
-            select(ProductModel).where(
-                ProductModel.name.ilike(product.name)
-            )
-        ).first()
-
-        if existing is not None:
-            return False
-
-        session.add(ProductModel.to_model(product))
-        session.commit()
-        return True
-
-
-def retrieve_product_by_name(
-    eng: Engine, name: str
-) -> list[Product]:
-    """Wyszukuje produkty po nazwie, bez rozróżniania wielkości liter."""
-    with Session(eng) as session:
-        products = session.scalars(
-            select(ProductModel).where(
-                ProductModel.name.ilike(name)
-            )
+        products: Sequence[ProductModel] = session.scalars(
+            select(ProductModel).where(ProductModel.name == name)
         ).all()
+        for product in products:
+            prods.append(product.from_model())
+    return prods
 
-        return [product.from_model() for product in products]
+def main() -> None:
+    eng = prepare_db()
+    clear_db(eng)
+    populate_db(eng)
+    prods = retrieve_product_by_name(eng, "Monorail")
+    for prod in prods:
+        print(prod)
 
-
-def retrieve_all_products(eng: Engine) -> list[Product]:
-    """Zwraca wszystkie produkty."""
-    with Session(eng) as session:
-        products = session.scalars(
-            select(ProductModel).order_by(ProductModel.id)
-        ).all()
-
-        return [product.from_model() for product in products]
-
-
-def update_product(
-    eng: Engine,
-    name: str,
-    new_name: str,
-    new_price: float,
-    new_stock: int
-) -> bool:
-    """Zmienia nazwę, cenę i stan produktu."""
-    with Session(eng) as session:
-        product = session.scalars(
-            select(ProductModel).where(
-                ProductModel.name.ilike(name)
-            )
-        ).first()
-
-        if product is None:
-            return False
-
-        # Nie pozwalaj zmienić nazwy na nazwę innego produktu.
-        duplicate = session.scalars(
-            select(ProductModel).where(
-                ProductModel.name.ilike(new_name),
-                ProductModel.id != product.id
-            )
-        ).first()
-
-        if duplicate is not None:
-            return False
-
-        product.name = new_name
-        product.price = new_price
-        product.stock = new_stock
-
-        session.commit()
-        return True
-
-
-def delete_product(eng: Engine, name: str) -> bool:
-    """Usuwa jeden produkt po nazwie."""
-    with Session(eng) as session:
-        product = session.scalars(
-            select(ProductModel).where(
-                ProductModel.name.ilike(name)
-            )
-        ).first()
-
-        if product is None:
-            return False
-
-        session.delete(product)
-        session.commit()
-        return True
 
 if __name__ == "__main__":
-    eng = prepare_db()
-    print("Baza danych jest gotowa.")
-
-    for product in retrieve_all_products(eng):
-        print(product)
+    main()
