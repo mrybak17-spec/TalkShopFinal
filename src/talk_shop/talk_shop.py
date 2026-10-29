@@ -18,6 +18,7 @@ from data_shop import (
     update_product,
     delete_product,
     clear_db,
+    statistics,
 )
 
 
@@ -355,13 +356,8 @@ def admin_menu(eng) -> None:
                 print("Anulowano czyszczenie.")
         
         elif choice == "7":
-            #Statystyka - mój dodatek moze kiedys sie przyda
-            products_number = len(retrieve_all_products(eng))
-            print(f"Liczba produktów w bazie: {products_number}")
-            global_worth = sum(product.price * product.stock for product in retrieve_all_products(eng))
-            print(f"Łączna wartość magazynu: {global_worth:.2f}")
-            global_stock = sum(product.stock for product in retrieve_all_products(eng))
-            print(f"Łączny stan magazynowy: {global_stock}")
+            products = retrieve_all_products(eng)
+            statistics(eng, products)
 
         # Wyjście z menu
         elif choice == "0":

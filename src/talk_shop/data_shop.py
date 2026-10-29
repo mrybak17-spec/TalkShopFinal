@@ -164,6 +164,16 @@ def delete_product(eng: Engine, name: str) -> bool:
         session.commit()
         return True
 
+def statistics(eng: Engine, products: Sequence[Product]) -> None:
+    """Wyświetla statystyki dotyczące produktów w bazie danych."""
+    products_number = len(products)
+    global_worth = sum(product.price * product.stock for product in products)
+    global_stock = sum(product.stock for product in products)
+
+    print(f"Liczba produktów w bazie: {products_number}")
+    print(f"Łączna wartość magazynu: {global_worth:.2f}")
+    print(f"Łączny stan magazynowy: {global_stock}")
+
 if __name__ == "__main__":
     eng = prepare_db()
     print("Baza danych jest gotowa.")
