@@ -178,6 +178,7 @@ def admin_menu(eng) -> None:
         print("4 - Usuń produkt")
         print("5 - Lista produktów")
         print("6 - Wyczyść bazę danych")
+        print("7 - Statystyka")
         print("0 - Wyjdź")
 
         choice = input("Wybierz opcję: ").strip()
@@ -352,6 +353,15 @@ def admin_menu(eng) -> None:
                 print("Baza produktów została wyczyszczona.")
             else:
                 print("Anulowano czyszczenie.")
+        
+        elif choice == "7":
+            #Statystyka - mój dodatek moze kiedys sie przyda
+            products_number = len(retrieve_all_products(eng))
+            print(f"Liczba produktów w bazie: {products_number}")
+            global_worth = sum(product.price * product.stock for product in retrieve_all_products(eng))
+            print(f"Łączna wartość magazynu: {global_worth:.2f}")
+            global_stock = sum(product.stock for product in retrieve_all_products(eng))
+            print(f"Łączny stan magazynowy: {global_stock}")
 
         # Wyjście z menu
         elif choice == "0":
