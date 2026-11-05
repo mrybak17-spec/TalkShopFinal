@@ -1,0 +1,34 @@
+
+%import common.WS
+%ignore WS
+
+%ignore "?"
+
+start: price_question
+     | quantity_question
+     | stock_question
+     | availability_question
+
+HOW_MUCH: "how much"
+HOW_MANY: "how many"
+THERE: "there"
+BE: "is" | "are"
+DET: "the" | "a" | "any"
+QUE: "available" | "in stock" | "in the stock" | "in the shop"
+AVAILABILITY: "available"
+
+ITEM: /[a-z_]+/
+
+price_question: HOW_MUCH BE DET ITEM
+              | HOW_MUCH BE ITEM
+
+quantity_question: HOW_MANY ITEM BE QUE
+                 | HOW_MANY ITEM QUE
+
+stock_question: BE THERE DET ITEM QUE
+              | BE THERE ITEM QUE
+              | BE THERE DET ITEM
+              | BE ITEM QUE
+
+availability_question: BE THERE DET ITEM AVAILABILITY
+                     | BE THERE ITEM AVAILABILITY
