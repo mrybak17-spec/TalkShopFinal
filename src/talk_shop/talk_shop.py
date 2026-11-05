@@ -103,7 +103,7 @@ def process_query(query: str, grammar: str, eng) -> str:
 
     if query_node.data == "stock_question":
         item = list(query_node.find_token("ITEM"))[0].value.lower()
-        pproduct = find_product(item, eng)
+        product = find_product(item, eng)
 
         if product is None:
             return f"{item} is not available in our shop"
